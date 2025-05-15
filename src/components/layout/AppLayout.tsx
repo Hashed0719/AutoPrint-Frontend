@@ -19,7 +19,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2" onClick={() => navigate('/')} role="button">
             <PrinterIcon className="text-brand-600" size={28} />
-            <span className="font-bold text-xl">AuraPrint</span>
+            <span className="font-bold text-xl">AutoPrint</span>
           </div>
           
           {state.isAuthenticated ? (
@@ -68,7 +68,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <footer className="border-t py-6 bg-white">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            &copy; 2025 AuraPrint. All rights reserved.
+            &copy; 2025 AutoPrint. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <a href="#" className="text-sm text-muted-foreground hover:text-foreground">

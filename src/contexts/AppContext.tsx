@@ -23,7 +23,7 @@ export type UploadedDocument = {
 type AppState = {
   isAuthenticated: boolean;
   user: { email: string } | null;
-  document: UploadedDocument | null;
+  documents: UploadedDocument[];
   printSettings: PrintSettings;
   totalPrice: number;
   pricePerPage: number;
@@ -37,6 +37,7 @@ type AppContextType = {
   logout: () => void;
   register: (email: string, password: string) => Promise<void>;
   uploadDocument: (file: File) => Promise<void>;
+  uploadMultipleDocuments: (files: File[]) => Promise<void>;
   setPrintSettings: (settings: Partial<PrintSettings>) => void;
   calculatePrice: () => void;
 };
@@ -50,8 +51,8 @@ const defaultPrintSettings: PrintSettings = {
   doubleSided: false,
 };
 
-// Default price per page in cents
-const DEFAULT_PRICE_PER_PAGE = 15; // 15 cents per page
+// Default price per page in INR (changed to 2 INR per page)
+const DEFAULT_PRICE_PER_PAGE = 200; // 2 INR = 200 cents per page
 
 // Create the context with a default value
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -61,7 +62,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<AppState>({
     isAuthenticated: false,
     user: null,
-    document: null,
+    documents: [],
     printSettings: defaultPrintSettings,
     totalPrice: 0,
     pricePerPage: DEFAULT_PRICE_PER_PAGE,
@@ -97,21 +98,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
-  // Mock document upload with page count estimation
+  // Legacy support for single document upload
   const uploadDocument = async (file: File) => {
-    // In a real app, we'd analyze the PDF to get the page count
+    // Reuse multi-document upload for single file
+    return uploadMultipleDocuments([file]);
+  };
+
+  // Upload multiple documents with page count estimation
+  const uploadMultipleDocuments = async (files: File[]) => {
+    // In a real app, we'd analyze the PDFs to get the page counts
     // For now, we'll use a simple heuristic based on file size
-    const estimatedPageCount = Math.max(1, Math.floor(file.size / 50000));
+    const uploadedDocuments = files.map(file => ({
+      file,
+      pageCount: Math.max(1, Math.floor(file.size / 50000)),
+      name: file.name,
+      size: file.size,
+      uploadDate: new Date(),
+    }));
     
     setState((prev) => ({
       ...prev,
-      document: {
-        file,
-        pageCount: estimatedPageCount,
-        name: file.name,
-        size: file.size,
-        uploadDate: new Date(),
-      },
+      documents: uploadedDocuments,
       isPriceCalculated: false,
     }));
   };
@@ -128,9 +135,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
-  // Calculate total price based on document and settings
+  // Calculate total price based on documents and settings
   const calculatePrice = () => {
-    if (!state.document) return;
+    if (state.documents.length === 0) return;
 
     let pricePerPage = state.pricePerPage;
     
@@ -143,7 +150,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       pricePerPage *= 0.8; // 20% discount for double-sided
     }
 
-    const totalPages = state.document.pageCount * state.printSettings.copies;
+    // Calculate total pages across all documents
+    const totalPages = state.documents.reduce(
+      (sum, doc) => sum + doc.pageCount, 
+      0
+    ) * state.printSettings.copies;
+    
     const price = totalPages * pricePerPage;
 
     setState((prev) => ({
@@ -159,6 +171,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     logout,
     register,
     uploadDocument,
+    uploadMultipleDocuments,
     setPrintSettings,
     calculatePrice,
   };

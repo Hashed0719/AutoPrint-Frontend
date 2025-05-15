@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
-import { FileIcon, UploadIcon, FileTextIcon } from 'lucide-react';
+import { FileIcon, UploadIcon, FileTextIcon, FilesIcon } from 'lucide-react';
 
 const DocumentUpload = () => {
-  const { uploadDocument, state } = useApp();
+  const { uploadMultipleDocuments, state } = useApp();
   const [isDragging, setIsDragging] = useState(false);
   const navigate = useNavigate();
 
@@ -16,18 +16,23 @@ const DocumentUpload = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
-    const file = files[0];
-    if (!isValidFileType(file)) {
-      toast.error('Please upload a PDF file');
+    const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+    
+    if (pdfFiles.length === 0) {
+      toast.error('Please upload PDF files only');
       return;
     }
 
     try {
-      await uploadDocument(file);
-      toast.success('Document uploaded successfully');
+      await uploadMultipleDocuments(pdfFiles);
+      toast.success(
+        pdfFiles.length === 1 
+          ? 'Document uploaded successfully' 
+          : `${pdfFiles.length} documents uploaded successfully`
+      );
       navigate('/configure');
     } catch (error) {
-      toast.error('Failed to upload document');
+      toast.error('Failed to upload documents');
     }
   };
 
@@ -47,45 +52,46 @@ const DocumentUpload = () => {
     const files = e.dataTransfer.files;
     if (!files || files.length === 0) return;
 
-    const file = files[0];
-    if (!isValidFileType(file)) {
-      toast.error('Please upload a PDF file');
+    const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+    
+    if (pdfFiles.length === 0) {
+      toast.error('Please upload PDF files only');
       return;
     }
 
     try {
-      await uploadDocument(file);
-      toast.success('Document uploaded successfully');
+      await uploadMultipleDocuments(pdfFiles);
+      toast.success(
+        pdfFiles.length === 1 
+          ? 'Document uploaded successfully' 
+          : `${pdfFiles.length} documents uploaded successfully`
+      );
       navigate('/configure');
     } catch (error) {
-      toast.error('Failed to upload document');
+      toast.error('Failed to upload documents');
     }
-  };
-
-  const isValidFileType = (file: File) => {
-    // For now, we'll only accept PDF files
-    return file.type === 'application/pdf';
   };
 
   return (
     <Card className="w-full max-w-xl shadow-lg">
       <CardContent className="p-6">
         <div
-          className={`file-input-field flex flex-col items-center justify-center ${
+          className={`file-input-field border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center cursor-pointer relative ${
             isDragging ? 'border-brand-500 bg-brand-50' : ''
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <UploadIcon size={48} className="text-brand-400 mb-4" />
-          <h3 className="text-lg font-medium mb-2">Upload your document</h3>
-          <p className="text-muted-foreground text-sm mb-4 text-center max-w-xs">
-            Drag and drop your PDF here, or click to browse files
+          <FilesIcon size={48} className="text-brand-400 mb-4 mx-auto" />
+          <h3 className="text-lg font-medium mb-2">Upload your documents</h3>
+          <p className="text-muted-foreground text-sm mb-4 text-center max-w-xs mx-auto">
+            Drag and drop multiple PDFs here, or click to browse files
           </p>
           <input
             type="file"
             accept=".pdf"
+            multiple
             onChange={handleFileChange}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
@@ -94,7 +100,7 @@ const DocumentUpload = () => {
             className="pointer-events-none"
             type="button"
           >
-            Select PDF
+            Select PDFs
           </Button>
         </div>
         

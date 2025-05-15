@@ -10,9 +10,9 @@ const PaymentDetails = () => {
   const { state, calculatePrice } = useApp();
   const navigate = useNavigate();
   
-  // Make sure we have a document and price is calculated
+  // Make sure we have documents and price is calculated
   useEffect(() => {
-    if (!state.document) {
+    if (state.documents.length === 0) {
       navigate('/upload');
       return;
     }
@@ -20,7 +20,7 @@ const PaymentDetails = () => {
     if (!state.isPriceCalculated) {
       calculatePrice();
     }
-  }, [state.document, state.isPriceCalculated]);
+  }, [state.documents, state.isPriceCalculated]);
 
   // Redirect if user is not authenticated
   useEffect(() => {
@@ -40,6 +40,9 @@ const PaymentDetails = () => {
   };
 
   const orderId = generateOrderId();
+  
+  // Calculate total pages across all documents
+  const totalPages = state.documents.reduce((sum, doc) => sum + doc.pageCount, 0);
 
   return (
     <Card className="w-full max-w-xl shadow-lg">
@@ -51,12 +54,12 @@ const PaymentDetails = () => {
           <h3 className="font-medium mb-4">Order Summary</h3>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Document</span>
-              <span className="font-medium">{state.document?.name}</span>
+              <span className="text-muted-foreground">Documents</span>
+              <span className="font-medium">{state.documents.length} file(s)</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Pages</span>
-              <span className="font-medium">{state.document?.pageCount} pages</span>
+              <span className="font-medium">{totalPages} pages</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Copies</span>
@@ -69,6 +72,10 @@ const PaymentDetails = () => {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Double-sided</span>
               <span className="font-medium">{state.printSettings.doubleSided ? 'Yes' : 'No'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Rate</span>
+              <span className="font-medium">₹2.00 per page</span>
             </div>
             <div className="border-t my-2"></div>
             <div className="flex justify-between font-medium">

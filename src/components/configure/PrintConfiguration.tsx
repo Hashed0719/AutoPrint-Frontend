@@ -15,11 +15,12 @@ const PrintConfiguration = () => {
   const { state, setPrintSettings, calculatePrice } = useApp();
   const navigate = useNavigate();
   
-  // Redirect if no document is uploaded
-  if (!state.document) {
-    navigate('/upload');
-    return null;
-  }
+  // Redirect if no documents are uploaded
+  useEffect(() => {
+    if (state.documents.length === 0) {
+      navigate('/upload');
+    }
+  }, [state.documents, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +47,10 @@ const PrintConfiguration = () => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // Calculate total pages across all documents
+  const totalPages = state.documents.reduce((sum, doc) => sum + doc.pageCount, 0);
+  const totalSize = state.documents.reduce((sum, doc) => sum + doc.size, 0);
+
   return (
     <Card className="w-full max-w-2xl shadow-lg">
       <CardHeader>
@@ -55,24 +60,37 @@ const PrintConfiguration = () => {
             variant="ghost" 
             size="icon" 
             onClick={() => navigate('/upload')}
-            title="Upload a different document"
+            title="Upload different documents"
           >
             <XIcon size={18} />
           </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 p-4 bg-muted/50 rounded-lg flex items-center space-x-4">
-          <div className="bg-brand-100 p-2 rounded">
-            <FileIcon className="text-brand-600" size={24} />
+        <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+          <h3 className="font-medium mb-3">Documents to Print ({state.documents.length})</h3>
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+            {state.documents.map((doc, index) => (
+              <div key={index} className="flex items-center space-x-4 p-2 bg-white rounded-md shadow-sm">
+                <div className="bg-brand-100 p-2 rounded">
+                  <FileIcon className="text-brand-600" size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium truncate" title={doc.name}>
+                    {doc.name}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {doc.pageCount} pages • {formatFileSize(doc.size)}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="flex-1">
-            <h3 className="font-medium truncate" title={state.document.name}>
-              {state.document.name}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {state.document.pageCount} pages • {formatFileSize(state.document.size)}
-            </p>
+          <div className="mt-3 pt-3 border-t flex items-center justify-between">
+            <span className="text-sm font-medium">Total</span>
+            <span className="text-sm">
+              {totalPages} pages • {formatFileSize(totalSize)}
+            </span>
           </div>
         </div>
         

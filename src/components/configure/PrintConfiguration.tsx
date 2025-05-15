@@ -3,12 +3,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useApp } from '@/contexts/AppContext';
 import { PrinterIcon, XIcon, FileIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 const PrintConfiguration = () => {
   const { state, setPrintSettings, calculatePrice } = useApp();
@@ -63,72 +63,89 @@ const PrintConfiguration = () => {
         </div>
         
         <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Color Mode */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h3 className="font-medium">Color Mode</h3>
-              <RadioGroup 
+              <ToggleGroup 
+                type="single" 
                 defaultValue={state.printSettings.colorMode}
-                onValueChange={(value: 'color' | 'blackAndWhite') => 
-                  setPrintSettings({ colorMode: value })
-                }
-                className="flex flex-col space-y-1"
+                onValueChange={(value: 'color' | 'blackAndWhite') => {
+                  if (value) setPrintSettings({ colorMode: value });
+                }}
+                className="grid grid-cols-2 gap-2 w-full"
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="blackAndWhite" id="bw" />
-                  <Label htmlFor="bw">Black & White</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="color" id="color" />
-                  <Label htmlFor="color">Color</Label>
-                </div>
-              </RadioGroup>
+                <ToggleGroupItem 
+                  value="blackAndWhite" 
+                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                >
+                  Black & White
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="color" 
+                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                >
+                  Color
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             {/* Orientation */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h3 className="font-medium">Orientation</h3>
-              <RadioGroup 
+              <ToggleGroup 
+                type="single" 
                 defaultValue={state.printSettings.orientation}
-                onValueChange={(value: 'portrait' | 'landscape') => 
-                  setPrintSettings({ orientation: value })
-                }
-                className="flex flex-col space-y-1"
+                onValueChange={(value: 'portrait' | 'landscape') => {
+                  if (value) setPrintSettings({ orientation: value });
+                }}
+                className="grid grid-cols-2 gap-2 w-full"
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="portrait" id="portrait" />
-                  <Label htmlFor="portrait">Portrait</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="landscape" id="landscape" />
-                  <Label htmlFor="landscape">Landscape</Label>
-                </div>
-              </RadioGroup>
+                <ToggleGroupItem 
+                  value="portrait" 
+                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                >
+                  Portrait
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="landscape" 
+                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                >
+                  Landscape
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             {/* Page Size */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h3 className="font-medium">Page Size</h3>
-              <RadioGroup 
+              <ToggleGroup 
+                type="single" 
                 defaultValue={state.printSettings.pageSize}
-                onValueChange={(value: 'a4' | 'letter' | 'legal') => 
-                  setPrintSettings({ pageSize: value })
-                }
-                className="flex flex-col space-y-1"
+                onValueChange={(value: 'a4' | 'letter' | 'legal') => {
+                  if (value) setPrintSettings({ pageSize: value });
+                }}
+                className="grid grid-cols-3 gap-2 w-full"
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="a4" id="a4" />
-                  <Label htmlFor="a4">A4</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="letter" id="letter" />
-                  <Label htmlFor="letter">Letter</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="legal" id="legal" />
-                  <Label htmlFor="legal">Legal</Label>
-                </div>
-              </RadioGroup>
+                <ToggleGroupItem 
+                  value="a4" 
+                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                >
+                  A4
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="letter" 
+                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                >
+                  Letter
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="legal" 
+                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                >
+                  Legal
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             {/* Double Sided */}
@@ -144,7 +161,7 @@ const PrintConfiguration = () => {
             </div>
 
             {/* Copies */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h3 className="font-medium">Number of Copies</h3>
               <div className="flex items-center space-x-3">
                 <Button 
@@ -157,15 +174,17 @@ const PrintConfiguration = () => {
                     }
                   }}
                   disabled={state.printSettings.copies <= 1}
+                  className="hover:bg-brand-50 transition-colors"
                 >
                   -
                 </Button>
-                <span className="w-8 text-center">{state.printSettings.copies}</span>
+                <span className="w-8 text-center font-medium">{state.printSettings.copies}</span>
                 <Button 
                   type="button"
                   variant="outline" 
                   size="icon"
                   onClick={() => setPrintSettings({ copies: state.printSettings.copies + 1 })}
+                  className="hover:bg-brand-50 transition-colors"
                 >
                   +
                 </Button>
@@ -176,7 +195,7 @@ const PrintConfiguration = () => {
           <CardFooter className="px-0 pt-6 mt-6 border-t flex justify-end">
             <Button 
               type="submit" 
-              className="bg-brand-600 hover:bg-brand-700 text-white flex items-center gap-2"
+              className="bg-brand-600 hover:bg-brand-700 text-white flex items-center gap-2 transition-colors"
             >
               <PrinterIcon size={18} />
               Continue to Payment

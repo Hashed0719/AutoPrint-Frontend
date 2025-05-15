@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
-import { QrCodeIcon, ArrowLeftIcon, CheckIcon, PrinterIcon } from 'lucide-react';
+import { QrCodeIcon, ArrowLeftIcon, CheckIcon, PrinterIcon, IndianRupeeIcon } from 'lucide-react';
 
 const PaymentDetails = () => {
   const { state, calculatePrice } = useApp();
@@ -22,9 +22,16 @@ const PaymentDetails = () => {
     }
   }, [state.document, state.isPriceCalculated]);
 
-  // Format cents to dollars
+  // Redirect if user is not authenticated
+  useEffect(() => {
+    if (!state.isAuthenticated) {
+      navigate('/login');
+    }
+  }, [state.isAuthenticated]);
+
+  // Format cents to INR
   const formatPrice = (cents: number): string => {
-    return `$${(cents / 100).toFixed(2)}`;
+    return `₹${(cents / 100).toFixed(2)}`;
   };
 
   // Generate a fake "order ID" for the QR code
@@ -66,7 +73,10 @@ const PaymentDetails = () => {
             <div className="border-t my-2"></div>
             <div className="flex justify-between font-medium">
               <span>Total</span>
-              <span className="text-lg">{formatPrice(state.totalPrice)}</span>
+              <span className="text-lg flex items-center gap-1">
+                <IndianRupeeIcon size={16} />
+                {(state.totalPrice / 100).toFixed(2)}
+              </span>
             </div>
           </div>
         </div>
@@ -97,7 +107,10 @@ const PaymentDetails = () => {
               Order ID: <span className="font-medium">{orderId}</span>
             </p>
             <p className="text-sm text-muted-foreground">
-              Amount: <span className="font-medium">{formatPrice(state.totalPrice)}</span>
+              Amount: <span className="font-medium flex items-center gap-1 justify-center">
+                <IndianRupeeIcon size={14} />
+                {(state.totalPrice / 100).toFixed(2)}
+              </span>
             </p>
           </div>
         </div>

@@ -1,14 +1,15 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useApp } from '@/contexts/AppContext';
-import { PrinterIcon, XIcon, FileIcon } from 'lucide-react';
+import { PrinterIcon, XIcon, FileIcon, InfoIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const PrintConfiguration = () => {
   const { state, setPrintSettings, calculatePrice } = useApp();
@@ -23,6 +24,19 @@ const PrintConfiguration = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     calculatePrice();
+    
+    // Check if user is authenticated before proceeding to payment
+    if (!state.isAuthenticated) {
+      toast.info('Please login or create an account to continue', {
+        description: 'Authentication is required for payment processing',
+        action: {
+          label: 'Login',
+          onClick: () => navigate('/login'),
+        },
+      });
+      return;
+    }
+    
     navigate('/payment');
   };
 
@@ -66,13 +80,23 @@ const PrintConfiguration = () => {
           <div className="space-y-8">
             {/* Color Mode */}
             <div className="space-y-3">
-              <h3 className="font-medium">Color Mode</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium">Color Mode</h3>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InfoIcon size={16} className="text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="w-[200px] text-sm">Currently only Black & White printing is available</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <ToggleGroup 
                 type="single" 
-                defaultValue={state.printSettings.colorMode}
-                onValueChange={(value: 'color' | 'blackAndWhite') => {
-                  if (value) setPrintSettings({ colorMode: value });
-                }}
+                value="blackAndWhite"
+                onValueChange={() => {}}
                 className="grid grid-cols-2 gap-2 w-full"
               >
                 <ToggleGroupItem 
@@ -83,7 +107,8 @@ const PrintConfiguration = () => {
                 </ToggleGroupItem>
                 <ToggleGroupItem 
                   value="color" 
-                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                  disabled
+                  className="opacity-50 cursor-not-allowed data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
                 >
                   Color
                 </ToggleGroupItem>
@@ -92,13 +117,23 @@ const PrintConfiguration = () => {
 
             {/* Orientation */}
             <div className="space-y-3">
-              <h3 className="font-medium">Orientation</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium">Orientation</h3>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InfoIcon size={16} className="text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="w-[200px] text-sm">Currently only Portrait orientation is available</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <ToggleGroup 
                 type="single" 
-                defaultValue={state.printSettings.orientation}
-                onValueChange={(value: 'portrait' | 'landscape') => {
-                  if (value) setPrintSettings({ orientation: value });
-                }}
+                value="portrait"
+                onValueChange={() => {}}
                 className="grid grid-cols-2 gap-2 w-full"
               >
                 <ToggleGroupItem 
@@ -109,7 +144,8 @@ const PrintConfiguration = () => {
                 </ToggleGroupItem>
                 <ToggleGroupItem 
                   value="landscape" 
-                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                  disabled
+                  className="opacity-50 cursor-not-allowed data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
                 >
                   Landscape
                 </ToggleGroupItem>
@@ -118,13 +154,23 @@ const PrintConfiguration = () => {
 
             {/* Page Size */}
             <div className="space-y-3">
-              <h3 className="font-medium">Page Size</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium">Page Size</h3>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InfoIcon size={16} className="text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="w-[200px] text-sm">Currently only A4 page size is available</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <ToggleGroup 
                 type="single" 
-                defaultValue={state.printSettings.pageSize}
-                onValueChange={(value: 'a4' | 'letter' | 'legal') => {
-                  if (value) setPrintSettings({ pageSize: value });
-                }}
+                value="a4"
+                onValueChange={() => {}}
                 className="grid grid-cols-3 gap-2 w-full"
               >
                 <ToggleGroupItem 
@@ -135,13 +181,15 @@ const PrintConfiguration = () => {
                 </ToggleGroupItem>
                 <ToggleGroupItem 
                   value="letter" 
-                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                  disabled
+                  className="opacity-50 cursor-not-allowed data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
                 >
                   Letter
                 </ToggleGroupItem>
                 <ToggleGroupItem 
                   value="legal" 
-                  className="data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
+                  disabled
+                  className="opacity-50 cursor-not-allowed data-[state=on]:bg-brand-100 data-[state=on]:border-brand-500 data-[state=on]:text-brand-700 data-[state=off]:bg-muted data-[state=off]:hover:bg-muted/80 transition-all border-2 border-transparent px-4 py-2 rounded-md flex justify-center items-center gap-2"
                 >
                   Legal
                 </ToggleGroupItem>
@@ -155,8 +203,9 @@ const PrintConfiguration = () => {
                 <p className="text-sm text-muted-foreground">Save paper with double-sided printing</p>
               </div>
               <Switch 
-                checked={state.printSettings.doubleSided}
-                onCheckedChange={(checked) => setPrintSettings({ doubleSided: checked })}
+                checked={false}
+                disabled={true}
+                className="opacity-50 cursor-not-allowed"
               />
             </div>
 
@@ -183,7 +232,14 @@ const PrintConfiguration = () => {
                   type="button"
                   variant="outline" 
                   size="icon"
-                  onClick={() => setPrintSettings({ copies: state.printSettings.copies + 1 })}
+                  onClick={() => {
+                    if (state.printSettings.copies < 10) {
+                      setPrintSettings({ copies: state.printSettings.copies + 1 });
+                    } else {
+                      toast.info("Maximum 10 copies allowed");
+                    }
+                  }}
+                  disabled={state.printSettings.copies >= 10}
                   className="hover:bg-brand-50 transition-colors"
                 >
                   +

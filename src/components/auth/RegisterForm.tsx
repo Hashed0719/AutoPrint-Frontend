@@ -1,0 +1,117 @@
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useApp } from '@/contexts/AppContext';
+import { toast } from 'sonner';
+
+const RegisterForm = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { register } = useApp();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      await register(email, password);
+      toast.success('Account created successfully');
+      navigate('/upload');
+    } catch (error) {
+      toast.error('Failed to create account. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Card className="w-full max-w-md shadow-lg">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
+        <CardDescription className="text-center">Sign up for AuraPrint to start printing</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium">
+              Email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              required
+              className="w-full"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="confirmPassword" className="text-sm font-medium">
+              Confirm Password
+            </label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full"
+            />
+          </div>
+          <Button 
+            type="submit" 
+            className="w-full bg-brand-600 hover:bg-brand-700 text-white"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Creating Account...' : 'Create Account'}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="flex justify-center border-t pt-4">
+        <p className="text-sm text-muted-foreground">
+          Already have an account? 
+          <a 
+            href="/login" 
+            className="ml-1 text-brand-500 hover:text-brand-700"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/login');
+            }}
+          >
+            Sign in
+          </a>
+        </p>
+      </CardFooter>
+    </Card>
+  );
+};
+
+export default RegisterForm;

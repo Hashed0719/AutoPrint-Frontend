@@ -8,6 +8,7 @@ import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 
 const RegisterForm = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,14 +24,25 @@ const RegisterForm = () => {
       return;
     }
     
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!username.trim()) {
+      toast.error('Username is required');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      await register(email, password);
+      await register(username, email, password);
       toast.success('Account created successfully');
       navigate('/upload');
-    } catch (error) {
-      toast.error('Failed to create account. Please try again.');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to create account. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -45,6 +57,20 @@ const RegisterForm = () => {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
+            <label htmlFor="username" className="text-sm font-medium">
+              Username
+            </label>
+            <Input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter a unique username"
+              required
+              className="w-full"
+            />
+          </div>
+          <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
               Email
             </label>
@@ -53,7 +79,7 @@ const RegisterForm = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="Enter your email address"
               required
               className="w-full"
             />
@@ -67,7 +93,7 @@ const RegisterForm = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Create a strong password"
               required
               className="w-full"
             />
@@ -81,7 +107,7 @@ const RegisterForm = () => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Re-enter your password"
               required
               className="w-full"
             />

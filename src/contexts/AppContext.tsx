@@ -1,5 +1,6 @@
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { authService } from '@/services/authService';
 
 // Define our print settings types
 export type PrintSettings = {
@@ -19,10 +20,16 @@ export type UploadedDocument = {
   uploadDate: Date;
 };
 
+// Define the user type
+type User = {
+  email: string;
+  username: string;
+} | null;
+
 // Define the app state type
 type AppState = {
   isAuthenticated: boolean;
-  user: { email: string } | null;
+  user: User;
   documents: UploadedDocument[];
   printSettings: PrintSettings;
   totalPrice: number;
@@ -35,7 +42,7 @@ type AppContextType = {
   state: AppState;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
   uploadDocument: (file: File) => Promise<void>;
   uploadMultipleDocuments: (files: File[]) => Promise<void>;
   setPrintSettings: (settings: Partial<PrintSettings>) => void;
@@ -69,33 +76,74 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     isPriceCalculated: false,
   });
 
-  // Mock login function
+    // Initialize auth state from localStorage
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      setState(prev => ({
+        ...prev,
+        isAuthenticated: true,
+        user: { 
+          email: user.email,
+          username: user.username || user.email.split('@')[0] // Fallback to email prefix if username not provided
+        }
+      }));
+    }
+  }, []);
+
+  // Login function
   const login = async (email: string, password: string) => {
-    // In a real app, this would validate with a backend
-    setState((prev) => ({
-      ...prev,
-      isAuthenticated: true,
-      user: { email },
-    }));
+    try {
+      const response = await authService.login({ username: email, password });
+      setState(prev => ({
+        ...prev,
+        isAuthenticated: true,
+        user: { 
+          email: response.email || email,
+          username: response.username || email.split('@')[0] // Fallback to email prefix if username not provided
+        },
+        documents: prev.documents,
+        printSettings: prev.printSettings,
+        totalPrice: prev.totalPrice,
+        pricePerPage: prev.pricePerPage,
+        isPriceCalculated: prev.isPriceCalculated
+      }));
+      return response;
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
   };
 
-  // Mock logout function
+  // Logout function
   const logout = () => {
-    setState((prev) => ({
+    authService.logout();
+    setState(prev => ({
       ...prev,
       isAuthenticated: false,
       user: null,
     }));
   };
 
-  // Mock register function
-  const register = async (email: string, password: string) => {
-    // In a real app, this would register with a backend
-    setState((prev) => ({
-      ...prev,
-      isAuthenticated: true,
-      user: { email },
-    }));
+  // Register function
+  const register = async (username: string, email: string, password: string) => {
+    try {
+      const response = await authService.register({ 
+        username, 
+        email, 
+        password 
+      });
+      
+      // Auto-login after registration
+      if (response) {
+        await login(email, password);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    }
   };
 
   // Legacy support for single document upload

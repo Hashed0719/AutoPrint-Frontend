@@ -8,7 +8,7 @@ import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 
 const LoginForm = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useApp();
@@ -19,11 +19,12 @@ const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      await login(email, password);
+      await login(username, password);
       toast.success('Successfully logged in');
       navigate('/upload');
-    } catch (error) {
-      toast.error('Failed to login. Please check your credentials.');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to login. Please check your credentials.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -39,14 +40,14 @@ const LoginForm = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
-              Email
+              Username or Email
             </label>
             <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username or email"
               required
               className="w-full"
             />
@@ -65,7 +66,7 @@ const LoginForm = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter your password"
               required
               className="w-full"
             />

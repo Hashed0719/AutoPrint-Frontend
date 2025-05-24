@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AppProvider } from "./contexts/AppContext";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AppProvider, useApp } from "./contexts/AppContext";
 
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -14,8 +14,44 @@ import Configure from "./pages/Configure";
 import Payment from "./pages/Payment";
 import Success from "./pages/Success";
 import NotFound from "./pages/NotFound";
+import { useEffect } from 'react';
 
 const queryClient = new QueryClient();
+
+// A wrapper component to handle authentication redirects
+const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
+  const { state: { isAuthenticated } } = useApp();
+  
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    const publicPaths = ['/login', '/register', '/'];
+    if (!isAuthenticated && !publicPaths.includes(window.location.pathname)) {
+      window.location.href = '/login';
+    }
+  }, [isAuthenticated]);
+
+  return <>{children}</>;
+};
+
+const AppRoutes = () => {
+  const { state: { isAuthenticated } } = useApp();
+
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/upload" />} />
+      <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/upload" />} />
+      
+      {/* Protected routes */}
+      <Route path="/upload" element={isAuthenticated ? <Upload /> : <Navigate to="/login" />} />
+      <Route path="/configure" element={isAuthenticated ? <Configure /> : <Navigate to="/login" />} />
+      <Route path="/payment" element={isAuthenticated ? <Payment /> : <Navigate to="/login" />} />
+      <Route path="/success" element={isAuthenticated ? <Success /> : <Navigate to="/login" />} />
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -24,16 +60,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/upload" element={<Upload />} />
-            <Route path="/configure" element={<Configure />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/success" element={<Success />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AuthWrapper>
+            <AppRoutes />
+          </AuthWrapper>
         </BrowserRouter>
       </AppProvider>
     </TooltipProvider>

@@ -34,7 +34,7 @@ const LoginForm = () => {
     <Card className="w-full max-w-md shadow-lg">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
-        <CardDescription className="text-center">Sign in to your AuraPrint account</CardDescription>
+        <CardDescription className="text-center">Sign in to your AutoPrint account</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

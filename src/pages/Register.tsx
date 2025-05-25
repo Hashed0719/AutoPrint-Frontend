@@ -7,7 +7,7 @@ const Register = () => {
   return (
     <AppLayout>
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-8 text-center">Create AuraPrint Account</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">Create AutoPrint Account</h1>
         <RegisterForm />
       </div>
     </AppLayout>

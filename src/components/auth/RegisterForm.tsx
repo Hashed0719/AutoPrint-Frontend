@@ -52,7 +52,7 @@ const RegisterForm = () => {
     <Card className="w-full max-w-md shadow-lg">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
-        <CardDescription className="text-center">Sign up for AuraPrint to start printing</CardDescription>
+        <CardDescription className="text-center">Sign up for AutoPrint to start printing</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

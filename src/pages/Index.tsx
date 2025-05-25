@@ -98,7 +98,7 @@ const Index = () => {
 
         {/* Features */}
         <div className="mb-16 md:mb-24">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Why Choose AuraPrint</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Why Choose AutoPrint</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border">

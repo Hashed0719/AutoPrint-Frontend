@@ -70,9 +70,46 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <p className="text-sm text-muted-foreground">
             &copy; 2025 AutoPrint. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
-              Terms of Service
+          <div className="flex items-center gap-4 flex-wrap justify-end">
+            <a 
+              href="https://merchant.razorpay.com/policy/QZ8APDS1hfqzx4/refund" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+            >
+              Cancellation & Refund
+            </a>
+            <a 
+              href="https://merchant.razorpay.com/policy/QZ8APDS1hfqzx4/contact_us" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+            >
+              Contact Us
+            </a>
+            <a 
+              href="https://merchant.razorpay.com/policy/QZ8APDS1hfqzx4/terms" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+            >
+              Terms & Conditions
+            </a>
+            <a 
+              href="https://merchant.razorpay.com/policy/QZ8APDS1hfqzx4/privacy" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+            >
+              Privacy Policy
+            </a>
+            <a 
+              href="https://merchant.razorpay.com/policy/QZ8APDS1hfqzx4/shipping" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+            >
+              Shipping Policy
             </a>
           </div>
         </div>

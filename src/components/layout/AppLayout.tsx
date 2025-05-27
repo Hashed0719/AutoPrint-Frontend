@@ -72,9 +72,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </p>
           <div className="flex items-center gap-4">
             <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
               Terms of Service
             </a>
           </div>

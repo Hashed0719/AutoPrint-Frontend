@@ -13,6 +13,7 @@ import Upload from "./pages/Upload";
 import Configure from "./pages/Configure";
 import Payment from "./pages/Payment";
 import Success from "./pages/Success";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import { useEffect } from 'react';
 
@@ -24,7 +25,7 @@ const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   
   // Redirect to login if not authenticated
   useEffect(() => {
-    const publicPaths = ['/login', '/register', '/'];
+    const publicPaths = ['/login', '/register', '/', '/contact'];
     if (!isAuthenticated && !publicPaths.includes(window.location.pathname)) {
       window.location.href = '/login';
     }
@@ -41,6 +42,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/upload" />} />
       <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/upload" />} />
+      <Route path="/contact" element={<Contact />} />
       
       {/* Protected routes */}
       <Route path="/upload" element={isAuthenticated ? <Upload /> : <Navigate to="/login" />} />

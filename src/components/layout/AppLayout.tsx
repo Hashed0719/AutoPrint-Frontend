@@ -79,14 +79,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             >
               Cancellation & Refund
             </a>
-            <a 
-              href="https://merchant.razorpay.com/policy/QZ8APDS1hfqzx4/contact_us" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+            <button 
+              onClick={() => navigate('/contact')}
+              className="text-sm text-muted-foreground hover:text-foreground hover:underline bg-transparent border-none p-0 cursor-pointer"
             >
               Contact Us
-            </a>
+            </button>
             <a 
               href="https://merchant.razorpay.com/policy/QZ8APDS1hfqzx4/terms" 
               target="_blank" 

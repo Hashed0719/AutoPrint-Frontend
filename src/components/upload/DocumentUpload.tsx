@@ -1,29 +1,27 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
-import { FileIcon, UploadIcon, FileTextIcon, FilesIcon } from 'lucide-react';
+import { FileIcon, UploadIcon, FileTextIcon, FilesIcon, Loader2 } from 'lucide-react';
 
 const DocumentUpload = () => {
   const { uploadMultipleDocuments, state } = useApp();
   const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    
+  const processFiles = async (files: FileList) => {
     const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
     
     if (pdfFiles.length === 0) {
       toast.error('Please upload PDF files only');
-      return;
+      return false;
     }
 
     try {
+      setIsLoading(true);
       await uploadMultipleDocuments(pdfFiles);
       toast.success(
         pdfFiles.length === 1 
@@ -31,14 +29,26 @@ const DocumentUpload = () => {
           : `${pdfFiles.length} documents uploaded successfully`
       );
       navigate('/configure');
+      return true;
     } catch (error) {
-      toast.error('Failed to upload documents');
+      toast.error('Failed to process documents');
+      return false;
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    await processFiles(files);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
+    if (!isLoading) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = () => {
@@ -51,57 +61,54 @@ const DocumentUpload = () => {
 
     const files = e.dataTransfer.files;
     if (!files || files.length === 0) return;
-
-    const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
     
-    if (pdfFiles.length === 0) {
-      toast.error('Please upload PDF files only');
-      return;
-    }
-
-    try {
-      await uploadMultipleDocuments(pdfFiles);
-      toast.success(
-        pdfFiles.length === 1 
-          ? 'Document uploaded successfully' 
-          : `${pdfFiles.length} documents uploaded successfully`
-      );
-      navigate('/configure');
-    } catch (error) {
-      toast.error('Failed to upload documents');
-    }
+    await processFiles(files);
   };
 
   return (
     <Card className="w-full max-w-xl shadow-lg">
       <CardContent className="p-6">
         <div
-          className={`file-input-field border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center cursor-pointer relative ${
-            isDragging ? 'border-brand-500 bg-brand-50' : ''
-          }`}
+          className={`file-input-field border-2 border-dashed rounded-lg p-8 text-center relative transition-colors ${
+            isDragging 
+              ? 'border-brand-500 bg-brand-50' 
+              : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+          } ${isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <FilesIcon size={48} className="text-brand-400 mb-4 mx-auto" />
-          <h3 className="text-lg font-medium mb-2">Upload your documents</h3>
-          <p className="text-muted-foreground text-sm mb-4 text-center max-w-xs mx-auto">
-            Drag and drop multiple PDFs here, or click to browse files
-          </p>
-          <input
-            type="file"
-            accept=".pdf"
-            multiple
-            onChange={handleFileChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <Button 
-            variant="outline" 
-            className="pointer-events-none"
-            type="button"
-          >
-            Select PDFs
-          </Button>
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center">
+              <Loader2 className="h-12 w-12 text-brand-500 animate-spin mb-4" />
+              <h3 className="text-lg font-medium mb-2">Processing PDFs...</h3>
+              <p className="text-muted-foreground text-sm">Please wait while we analyze your documents</p>
+            </div>
+          ) : (
+            <>
+              <FilesIcon size={48} className="text-brand-400 mb-4 mx-auto" />
+              <h3 className="text-lg font-medium mb-2">Upload your documents</h3>
+              <p className="text-muted-foreground text-sm mb-4 text-center max-w-xs mx-auto">
+                Drag and drop multiple PDFs here, or click to browse files
+              </p>
+              <input
+                type="file"
+                accept=".pdf"
+                multiple
+                onChange={handleFileChange}
+                disabled={isLoading}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+              />
+              <Button 
+                variant="outline" 
+                className="pointer-events-none"
+                type="button"
+                disabled={isLoading}
+              >
+                Select PDFs
+              </Button>
+            </>
+          )}
         </div>
         
         <div className="mt-6">

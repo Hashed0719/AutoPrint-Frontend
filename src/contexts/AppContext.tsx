@@ -1,6 +1,6 @@
-
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { authService } from '@/services/authService';
+import { processPdfFiles } from '@/utils/pdfUtils';
 
 // Define our print settings types
 export type PrintSettings = {
@@ -152,23 +152,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return uploadMultipleDocuments([file]);
   };
 
-  // Upload multiple documents with page count estimation
+  // Upload multiple documents with accurate page count
   const uploadMultipleDocuments = async (files: File[]) => {
-    // In a real app, we'd analyze the PDFs to get the page counts
-    // For now, we'll use a simple heuristic based on file size
-    const uploadedDocuments = files.map(file => ({
-      file,
-      pageCount: Math.max(1, Math.floor(file.size / 50000)),
-      name: file.name,
-      size: file.size,
-      uploadDate: new Date(),
-    }));
-    
-    setState((prev) => ({
-      ...prev,
-      documents: uploadedDocuments,
-      isPriceCalculated: false,
-    }));
+    try {
+      const uploadedDocuments = await processPdfFiles(files);
+      
+      setState((prev) => ({
+        ...prev,
+        documents: uploadedDocuments,
+        isPriceCalculated: false,
+      }));
+    } catch (error) {
+      console.error('Error processing PDFs:', error);
+      throw error;
+    }
   };
 
   // Update print settings

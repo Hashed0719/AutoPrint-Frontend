@@ -1,16 +1,21 @@
-import { getDocument } from 'pdfjs-dist';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 
-// Set worker path - this is important for pdf.js to work properly
-const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
+let pdfWorkerInitialized = false;
 
-// Initialize the worker
-if (typeof window !== 'undefined') {
-  const pdfjs = await import('pdfjs-dist');
-  pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-}
+const initializePdfWorker = async () => {
+  if (!pdfWorkerInitialized && typeof window !== 'undefined') {
+    const pdfjs = await import('pdfjs-dist');
+    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
+    GlobalWorkerOptions.workerSrc = pdfjsWorker;
+    pdfWorkerInitialized = true;
+  }
+};
 
 export const getPdfPageCount = async (file: File): Promise<number> => {
   try {
+    // Initialize PDF.js worker if not already done
+    await initializePdfWorker();
+    
     // Convert file to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
     

@@ -111,7 +111,13 @@ export const authService = {
   getAuthHeader() {
     const token = localStorage.getItem('token');
     return token ? { Authorization: `Bearer ${token}` } : {};
+  },
+
+  getAuthToken() {
+    return localStorage.getItem('token') || '';
   }
 };
+
+export const getAuthToken = () => localStorage.getItem('token') || '';
 
 export default authService;

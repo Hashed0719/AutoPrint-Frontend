@@ -1,26 +1,168 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
-import { QrCodeIcon, ArrowLeftIcon, CheckIcon, PrinterIcon, IndianRupeeIcon } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { QrCodeIcon, ArrowLeftIcon, Loader2, IndianRupeeIcon } from 'lucide-react';
+import { createOrder } from '@/services/orderService';
+import { loadRazorpay, openRazorpay, verifyPayment } from '@/services/paymentService';
+import { UploadedDocument } from '@/types/document';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const PaymentDetails = () => {
   const { state, calculatePrice } = useApp();
   const navigate = useNavigate();
-  
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+
+  // Load Razorpay script when component mounts
+  useEffect(() => {
+    const loadScript = async () => {
+      const loaded = await loadRazorpay();
+      setIsRazorpayLoaded(loaded);
+    };
+
+    loadScript();
+  }, []);
+
   // Make sure we have documents and price is calculated
   useEffect(() => {
     if (state.documents.length === 0) {
       navigate('/upload');
       return;
     }
-    
+
     if (!state.isPriceCalculated) {
       calculatePrice();
     }
-  }, [state.documents, state.isPriceCalculated]);
+  }, [state.documents, state.isPriceCalculated, navigate, calculatePrice]);
+
+  const handlePayment = async () => {
+    if (!state.user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please log in to continue with payment',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!state.totalPrice) {
+      toast({
+        title: 'Error',
+        description: 'Please calculate the price first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!isRazorpayLoaded) {
+      toast({
+        title: 'Payment Error',
+        description: 'Payment service is still initializing. Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Create order request
+      const orderRequest = {
+        documents: state.documents.map((doc) => ({
+          documentId: doc.documentId || doc.id || `doc-${Math.random().toString(36).substr(2, 9)}`,
+          fileName: doc.fileName || doc.name || 'document.pdf',
+          pageCount: doc.pageCount || 1,
+          price: doc.price || 0,
+          printSettings: {
+            sides: doc.printSettings?.sides || state.printSettings.sides || 'single',
+            color: doc.printSettings?.color || state.printSettings.color || 'blackAndWhite',
+            pageSize: doc.printSettings?.pageSize || state.printSettings.pageSize || 'A4',
+            copies: doc.printSettings?.copies || state.printSettings.copies || 1,
+            orientation: doc.printSettings?.orientation || state.printSettings.orientation || 'portrait',
+            pages: doc.printSettings?.pages || state.printSettings.pages || '1',
+          },
+        })),
+        totalAmount: state.totalPrice,
+        currency: 'INR',
+        notes: `Print order for ${state.user?.username || 'user'}`,
+      };
+
+      // Create order
+      const order = await createOrder(orderRequest);
+
+      if (!order.razorpayOrderId) {
+        throw new Error('Failed to create payment order');
+      }
+
+      // Open Razorpay checkout
+      openRazorpay({
+        amount: order.totalAmount, // Amount is in paise (conversion handled in backend)
+        currency: order.currency,
+        name: 'AutoPrint',
+        description: 'Print Order Payment',
+        order_id: order.razorpayOrderId,
+        prefill: {
+          name: state.user?.name || state.user?.username || '',
+          email: state.user?.email || '',
+          contact: state.user?.phone || '',
+        },
+        theme: {
+          color: '#4f46e5',
+        },
+        handler: async (response) => {
+          try {
+            // Verify payment
+            await verifyPayment(
+              order.id, // Internal order ID
+              response.razorpay_payment_id,
+              response.razorpay_signature,
+              response.razorpay_order_id // Razorpay order ID
+            );
+
+            toast({
+              title: 'Payment Successful',
+              description: 'Your order has been placed successfully!',
+              variant: 'default',
+            });
+
+            // Redirect to orders page
+            navigate('/orders');
+          } catch (error) {
+            console.error('Payment verification failed:', error);
+            toast({
+              title: 'Payment Verification Failed',
+              description: 'There was an error verifying your payment. Please contact support.',
+              variant: 'destructive',
+            });
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            // Handle modal close
+            console.log('Payment modal was closed');
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: 'Payment Error',
+        description: error instanceof Error ? error.message : 'Failed to process payment',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Redirect if user is not authenticated
   useEffect(() => {
@@ -29,7 +171,7 @@ const PaymentDetails = () => {
     }
   }, [state.isAuthenticated]);
 
-  // Format cents to INR
+  // Format price to INR
   const formatPrice = (cents: number): string => {
     return `₹${(cents / 100).toFixed(2)}`;
   };
@@ -40,9 +182,12 @@ const PaymentDetails = () => {
   };
 
   const orderId = generateOrderId();
-  
+
   // Calculate total pages across all documents
-  const totalPages = state.documents.reduce((sum, doc) => sum + doc.pageCount, 0);
+  const totalPages = state.documents.reduce((sum, doc) => {
+    const pageCount = doc.pageCount || 1; // Default to 1 if not provided
+    return sum + pageCount;
+  }, 0);
 
   return (
     <Card className="w-full max-w-xl shadow-lg">
@@ -67,7 +212,9 @@ const PaymentDetails = () => {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Color Mode</span>
-              <span className="font-medium capitalize">{state.printSettings.colorMode === 'blackAndWhite' ? 'Black & White' : 'Color'}</span>
+              <span className="font-medium capitalize">
+                {state.printSettings.colorMode === 'blackAndWhite' ? 'Black & White' : 'Color'}
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Double-sided</span>
@@ -87,7 +234,7 @@ const PaymentDetails = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="border rounded-lg p-6 bg-muted/30">
           <div className="text-center mb-6">
             <h3 className="font-medium mb-1">Scan to Pay</h3>
@@ -95,7 +242,7 @@ const PaymentDetails = () => {
               Scan the QR code to complete your payment
             </p>
           </div>
-          
+
           <div className="flex justify-center mb-6">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <div className="relative w-48 h-48 border border-muted flex items-center justify-center">
@@ -108,7 +255,7 @@ const PaymentDetails = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-1">
               Order ID: <span className="font-medium">{orderId}</span>
@@ -123,23 +270,30 @@ const PaymentDetails = () => {
         </div>
       </CardContent>
       <CardFooter className="flex justify-between pt-6 border-t">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => navigate('/configure')}
           className="flex items-center gap-1"
         >
           <ArrowLeftIcon size={16} />
           Back
         </Button>
-        <Button 
-          onClick={() => {
-            // In a real app, this would verify payment and submit the print job
-            navigate('/success');
-          }}
+        <Button
+          onClick={handlePayment}
+          disabled={isLoading || !state.totalPrice || !isRazorpayLoaded}
           className="bg-brand-600 hover:bg-brand-700 text-white flex items-center gap-2"
         >
-          <CheckIcon size={16} />
-          Complete Order
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <IndianRupeeIcon className="mr-2 h-4 w-4" />
+              Pay Now
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>

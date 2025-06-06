@@ -4,26 +4,44 @@ import { processPdfFiles } from '@/utils/pdfUtils';
 
 // Define our print settings types
 export type PrintSettings = {
-  colorMode: 'color' | 'blackAndWhite';
+  color: 'color' | 'blackAndWhite';
   orientation: 'portrait' | 'landscape';
-  pageSize: 'a4' | 'letter' | 'legal';
+  pageSize: 'A4' | 'A3' | 'letter' | 'legal';
   copies: number;
-  doubleSided: boolean;
+  sides: 'single' | 'double';
+  pages: string;
+  colorMode?: 'color' | 'blackAndWhite'; // Legacy support
+  doubleSided?: boolean; // Legacy support
 };
 
 // Define the document type
 export type UploadedDocument = {
-  file: File;
+  id?: string;
+  documentId?: string;
+  file?: File;
   pageCount: number;
   name: string;
+  fileName?: string;
   size: number;
   uploadDate: Date;
+  price?: number;
+  printSettings?: {
+    sides: 'single' | 'double';
+    color: 'color' | 'blackAndWhite';
+    pageSize: 'A4' | 'A3' | 'letter' | 'legal';
+    copies: number;
+    orientation: 'portrait' | 'landscape';
+    pages: string;
+  };
 };
 
 // Define the user type
 type User = {
+  id?: string;
   email: string;
   username: string;
+  name?: string;
+  phone?: string;
 } | null;
 
 // Define the app state type
@@ -51,10 +69,14 @@ type AppContextType = {
 
 // Default print settings
 const defaultPrintSettings: PrintSettings = {
-  colorMode: 'blackAndWhite',
+  color: 'blackAndWhite',
   orientation: 'portrait',
-  pageSize: 'a4',
+  pageSize: 'A4',
   copies: 1,
+  sides: 'single',
+  pages: '1',
+  // Legacy support
+  colorMode: 'blackAndWhite',
   doubleSided: false,
 };
 

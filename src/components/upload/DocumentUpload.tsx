@@ -71,7 +71,7 @@ const DocumentUpload = () => {
         <div
           className={`file-input-field border-2 border-dashed rounded-lg p-8 text-center relative transition-colors ${
             isDragging 
-              ? 'border-brand-500 bg-brand-50' 
+              ? 'border-brand-600 bg-brand-100' 
               : 'border-muted-foreground/25 hover:border-muted-foreground/50'
           } ${isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
           onDragOver={handleDragOver}
@@ -82,13 +82,13 @@ const DocumentUpload = () => {
             <div className="flex flex-col items-center justify-center">
               <Loader2 className="h-12 w-12 text-brand-500 animate-spin mb-4" />
               <h3 className="text-lg font-medium mb-2">Processing PDFs...</h3>
-              <p className="text-muted-foreground text-sm">Please wait while we analyze your documents</p>
+              <p className="text-mutedForeground text-sm">Please wait while we analyze your documents</p>
             </div>
           ) : (
             <>
               <FilesIcon size={48} className="text-brand-400 mb-4 mx-auto" />
               <h3 className="text-lg font-medium mb-2">Upload your documents</h3>
-              <p className="text-muted-foreground text-sm mb-4 text-center max-w-xs mx-auto">
+              <p className="text-mutedForeground text-sm mb-4 text-center max-w-xs mx-auto">
                 Drag and drop multiple PDFs here, or click to browse files
               </p>
               <input
@@ -113,9 +113,9 @@ const DocumentUpload = () => {
         
         <div className="mt-6">
           <h4 className="text-sm font-medium mb-3">Supported File Types</h4>
-          <div className="flex items-center text-sm text-muted-foreground space-x-4">
+          <div className="flex items-center text-sm text-mutedForeground space-x-4">
             <div className="flex items-center">
-              <FileTextIcon size={16} className="mr-1 text-brand-500" />
+              <FileTextIcon size={16} className="mr-1 text-brand-600" />
               <span>PDF</span>
             </div>
           </div>

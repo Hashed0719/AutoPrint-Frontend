@@ -1,5 +1,6 @@
 
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
 	darkMode: ["class"],
@@ -41,6 +42,9 @@ export default {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'
 				},
+				mutedForeground: {
+					DEFAULT: 'hsl(var(--muted-foreground))',
+				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))'
@@ -54,17 +58,17 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				brand: {
-					50: '#f0f4ff',
-					100: '#dae3ff',
-					200: '#bccaff',
-					300: '#91a7ff',
-					400: '#6a7afa',
-					500: '#5055f2',
-					600: '#4338e4', // Primary brand color
-					700: '#3a2cc7',
-					800: '#3127a1',
-					900: '#2c2580',
-					950: '#1c1650',
+					50: 'var(--brand-50, #f0f4ff)',
+					100: 'var(--brand-100, #dae3ff)',
+					200: 'var(--brand-200, #bccaff)',
+					300: 'var(--brand-300, #91a7ff)',
+					400: 'var(--brand-400, #6a7afa)',
+					500: 'var(--brand-500, #5055f2)',
+					600: 'var(--brand-600, #4338e4)', // Primary brand color
+					700: 'var(--brand-700, #3a2cc7)',
+					800: 'var(--brand-800, #3127a1)',
+					900: 'var(--brand-900, #2c2580)',
+					950: 'var(--brand-950, #1c1650)',
 				},
 			},
 			borderRadius: {
@@ -101,5 +105,5 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [animate],
 } satisfies Config;

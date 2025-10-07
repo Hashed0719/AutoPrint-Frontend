@@ -100,6 +100,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             >
               Terms & Conditions
             </a>
+            <button 
+              onClick={() => navigate('/merchant')}
+              className="text-sm text-muted-foreground hover:text-foreground hover:underline bg-transparent border-none p-0 cursor-pointer"
+            >
+              Merchant Login
+            </button>
             <a 
               href="https://merchant.razorpay.com/policy/QZ8APDS1hfqzx4/privacy" 
               target="_blank" 

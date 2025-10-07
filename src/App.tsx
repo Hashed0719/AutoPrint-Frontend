@@ -15,6 +15,7 @@ import Payment from "./pages/Payment";
 import Success from "./pages/Success";
 import Contact from "./pages/Contact";
 import Orders from "./pages/Orders";
+import MerchantAuth from "./pages/MerchantAuth";
 import NotFound from "./pages/NotFound";
 import { useEffect } from 'react';
 
@@ -26,7 +27,7 @@ const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   
   // Redirect to login if not authenticated
   useEffect(() => {
-    const publicPaths = ['/login', '/register', '/', '/contact'];
+    const publicPaths = ['/login', '/register', '/', '/contact', '/merchant'];
     const currentPath = window.location.pathname;
     
     if (!isAuthenticated && !publicPaths.includes(currentPath)) {
@@ -48,6 +49,7 @@ const AppRoutes = () => {
       <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/upload" />} />
       <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/upload" />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/merchant" element={!isAuthenticated ? <MerchantAuth /> : <Navigate to="/merchant/dashboard" />} />
       
       {/* Protected routes */}
       <Route path="/upload" element={isAuthenticated ? <Upload /> : <Navigate to="/login" />} />

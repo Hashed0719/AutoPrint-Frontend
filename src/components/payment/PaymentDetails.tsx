@@ -81,6 +81,7 @@ const PaymentDetails = () => {
       }
 
       const orderRequest = {
+        username : state.user.username,
         merchantId: state.selectedMerchant.id,
         documents: state.documents.map((doc) => ({
           documentId: doc.documentId || doc.id || `doc-${Math.random().toString(36).substr(2, 9)}`,

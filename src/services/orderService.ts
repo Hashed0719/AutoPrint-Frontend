@@ -6,6 +6,7 @@ const API_URL = `${API_BASE_URL}/api/orders`;
 
 interface CreateOrderRequest {
   userId: string;
+  merchantId: string; // Added merchant ID field
   documents: {
     documentId: string;
     fileName: string;

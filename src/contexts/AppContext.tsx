@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { authService } from '@/services/authService';
+import { merchantService } from '@/services/merchantService';
 import { processPdfFiles } from '@/utils/pdfUtils';
 
 // Define our print settings types
@@ -45,6 +46,14 @@ type User = {
 } | null;
 
 // Define the app state type
+export type Merchant = {
+  id: string;
+  businessName: string;
+  email: string;
+  phoneNumber: string;
+  address?: string;
+} | null;
+
 type AppState = {
   isAuthenticated: boolean;
   user: User;
@@ -53,6 +62,9 @@ type AppState = {
   totalPrice: number;
   pricePerPage: number;
   isPriceCalculated: boolean;
+  merchants: Merchant[];
+  selectedMerchant: Merchant | null;
+  isLoadingMerchants: boolean;
 };
 
 // Define the context type
@@ -65,6 +77,8 @@ type AppContextType = {
   uploadMultipleDocuments: (files: File[]) => Promise<void>;
   setPrintSettings: (settings: Partial<PrintSettings>) => void;
   calculatePrice: () => void;
+  fetchMerchants: () => Promise<void>;
+  setSelectedMerchant: (merchant: Merchant | null) => void;
 };
 
 // Default print settings
@@ -96,6 +110,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     totalPrice: 0,
     pricePerPage: DEFAULT_PRICE_PER_PAGE,
     isPriceCalculated: false,
+    merchants: [],
+    selectedMerchant: null,
+    isLoadingMerchants: false,
   });
 
     // Initialize auth state from localStorage
@@ -232,6 +249,33 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  // Fetch merchants from the server
+  const fetchMerchants = React.useCallback(async () => {
+    try {
+      // Only fetch if we don't already have merchants and we're not already loading
+      if (state.merchants.length === 0 && !state.isLoadingMerchants) {
+        setState(prev => ({ ...prev, isLoadingMerchants: true }));
+        const merchants = await merchantService.getMerchants();
+        setState(prev => ({
+          ...prev,
+          merchants,
+          // Auto-select the first merchant if none is selected
+          selectedMerchant: prev.selectedMerchant || merchants[0] || null,
+          isLoadingMerchants: false
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching merchants:', error);
+      setState(prev => ({ ...prev, isLoadingMerchants: false }));
+      throw error;
+    }
+  }, [state.merchants.length, state.isLoadingMerchants]);
+
+  // Set selected merchant
+  const setSelectedMerchant = (merchant: Merchant | null) => {
+    setState(prev => ({ ...prev, selectedMerchant: merchant }));
+  };
+
   const value = {
     state,
     login,
@@ -241,6 +285,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     uploadMultipleDocuments,
     setPrintSettings,
     calculatePrice,
+    fetchMerchants,
+    setSelectedMerchant,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

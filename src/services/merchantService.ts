@@ -57,6 +57,33 @@ export const merchantService = {
   logout() {
     localStorage.removeItem('merchantToken');
     localStorage.removeItem('merchant');
+  },
+  
+  async getMerchants() {
+    try {
+      console.log('Fetching merchants from /merchants endpoint...');
+      const response = await api.get('/merchants');
+      console.log('Merchants API response:', response.data);
+      
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error('Unexpected response format from /merchants:', response.data);
+        throw new Error('Invalid response format from server');
+      }
+      
+      // Log each merchant's ID to verify they're present
+      response.data.forEach((merchant: any, index: number) => {
+        console.log(`Merchant ${index + 1}:`, {
+          id: merchant.id,
+          businessName: merchant.businessName,
+          hasId: 'id' in merchant
+        });
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching merchants:', error);
+      throw error;
+    }
   }
 };
 

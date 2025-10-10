@@ -75,8 +75,13 @@ const PaymentDetails = () => {
     setIsLoading(true);
 
     try {
-      // Create order request
+      // Create order request with merchant ID
+      if (!state.selectedMerchant?.id) {
+        throw new Error('No merchant selected');
+      }
+
       const orderRequest = {
+        merchantId: state.selectedMerchant.id,
         documents: state.documents.map((doc) => ({
           documentId: doc.documentId || doc.id || `doc-${Math.random().toString(36).substr(2, 9)}`,
           fileName: doc.fileName || doc.name || 'document.pdf',
@@ -93,7 +98,7 @@ const PaymentDetails = () => {
         })),
         totalAmount: state.totalPrice,
         currency: 'INR',
-        notes: `Print order for ${state.user?.username || 'user'}`,
+        notes: `Print order for ${state.user?.username || 'user'} to be fulfilled by ${state.selectedMerchant.businessName}`,
       };
 
       // Create order

@@ -6,14 +6,34 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useApp } from '@/contexts/AppContext';
-import { PrinterIcon, XIcon, FileIcon, InfoIcon } from 'lucide-react';
+import { PrinterIcon, XIcon, FileIcon, InfoIcon, Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const PrintConfiguration = () => {
-  const { state, setPrintSettings, calculatePrice } = useApp();
+  const { 
+    state, 
+    setPrintSettings, 
+    calculatePrice,
+    fetchMerchants,
+    setSelectedMerchant 
+  } = useApp();
   const navigate = useNavigate();
+
+  // Fetch merchants when component mounts
+  useEffect(() => {
+    const loadMerchants = async () => {
+      try {
+        await fetchMerchants();
+      } catch (error) {
+        console.error('Failed to load merchants:', error);
+      }
+    };
+
+    loadMerchants();
+  }, [fetchMerchants]);
   
   // Redirect if no documents are uploaded
   useEffect(() => {
@@ -38,6 +58,14 @@ const PrintConfiguration = () => {
       return;
     }
     
+    // Check if a merchant is selected
+    if (!state.selectedMerchant?.id) {
+      toast.error('Please select a merchant before proceeding to payment');
+      return;
+    }
+    
+    // Proceed to payment with the selected merchant ID
+    console.log('Proceeding to payment with merchant ID:', state.selectedMerchant.id);
     navigate('/payment');
   };
 
@@ -96,6 +124,56 @@ const PrintConfiguration = () => {
         
         <form onSubmit={handleSubmit}>
           <div className="space-y-8">
+            {/* Merchant Selection */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium">Select Merchant</h3>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InfoIcon size={16} className="text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="w-[200px] text-sm">Select the merchant where you want to print your documents</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              {state.isLoadingMerchants ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading merchants...</span>
+                </div>
+              ) : state.merchants.length > 0 ? (
+                <Select
+                  value={state.selectedMerchant?.id || ''}
+                  onValueChange={(value) => {
+                    const merchant = state.merchants.find(m => m?.id === value) || null;
+                    setSelectedMerchant(merchant);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a merchant" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {state.merchants.map((merchant) => (
+                      merchant && (
+                        <SelectItem key={merchant.id} value={merchant.id}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{merchant.businessName}</span>
+                            <span className="text-xs text-muted-foreground">{merchant.address}</span>
+                          </div>
+                        </SelectItem>
+                      )
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="text-sm text-muted-foreground p-2 bg-muted/50 rounded">
+                  No merchants available. Please contact support.
+                </div>
+              )}
+            </div>
             {/* Color Mode */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
